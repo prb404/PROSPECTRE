@@ -12,7 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.css">
-  <link rel="stylesheet" href="./assets/css/app.css?v=20260619-graph-help-1">
+  <link rel="stylesheet" href="./assets/css/app.css?v=20260619-graph-help-2">
   </head>
   <body>
     <div id="app" class="app-shell">
@@ -130,8 +130,8 @@
       </section>
 
       <section id="graph-help-popover" class="graph-help-popover toolbar-popover hidden" aria-label="Aide rapide du graphe">
-        <header>
-          <span><i>info</i></span>
+        <header class="graph-popover-head">
+          <span class="graph-popover-icon"><i>info</i></span>
           <div>
             <strong>Explorer le graphe</strong>
             <small>Gestes et raccourcis essentiels</small>
@@ -139,31 +139,34 @@
         </header>
         <div class="graph-help-grid">
           <article>
-            <h3>Souris</h3>
-            <p><kbd>Clic gauche</kbd> sélectionne un nœud ou un lien.</p>
-            <p><kbd>Clic gauche maintenu et Glisser</kbd> fige un nœud à sa position.</p>
-            <p><kbd>Clic droit</kbd> libère la position d'un nœud.</p>
-            <p><kbd>Clic droit maintenu</kbd> dans l'arrière-plan permet de déplacer la vue.</p>
-            <p><kbd>Clic gauche maintenu</kbd> dans l'arrière-plan permet de rotationner la vue.</p>
-            <p><kbd>Molette</kbd> zoome/dézoome.</p>
+            <h3><i>mouse</i>Souris</h3>
+            <p><i>ads_click</i><span><kbd>Clic gauche</kbd> sélectionne un nœud ou un lien.</span></p>
+            <p><i>open_with</i><span><kbd>Glisser un nœud</kbd> fige sa position.</span></p>
+            <p><i>restart_alt</i><span><kbd>Clic droit</kbd> libère la position d'un nœud.</span></p>
+            <p><i>pan_tool</i><span><kbd>Clic droit maintenu</kbd> déplace la vue.</span></p>
+            <p><i>360</i><span><kbd>Clic gauche maintenu</kbd> rotationne la vue.</span></p>
+            <p><i>zoom_in</i><span><kbd>Molette</kbd> zoome et dézoome.</span></p>
           </article>
           <article>
-            <h3>Clavier</h3>
-            <p><kbd>/</kbd> ou <kbd>Ctrl</kbd>+<kbd>K</kbd> ouvre la recherche.</p>
-            <p><kbd>↑</kbd><kbd>↓</kbd> naviguent les résultats ; <kbd>Entrée</kbd> ouvre.</p>
-            <p><kbd>Échap</kbd> ferme le panneau ouvert sans fermer la fiche.</p>
+            <h3><i>keyboard</i>Clavier</h3>
+            <p><i>search</i><span><kbd>/</kbd> ou <kbd>Ctrl</kbd>+<kbd>K</kbd> ouvre la recherche.</span></p>
+            <p><i>unfold_more</i><span><kbd>↑</kbd><kbd>↓</kbd> naviguent les résultats.</span></p>
+            <p><i>keyboard_return</i><span><kbd>Entrée</kbd> ouvre le résultat actif.</span></p>
+            <p><i>close</i><span><kbd>Échap</kbd> ferme l’aide ou la recherche.</span></p>
           </article>
           <article>
-            <h3>Focus</h3>
-            <p>Un nœud affiche son voisinage ; un lien sa chaîne principale.</p>
-            <p><strong>Voisinage</strong> règle la profondeur du contexte sélectionné.</p>
-            <p>Un clic dans le vide sort du focus visuel.</p>
+            <h3><i>center_focus_strong</i>Focus</h3>
+            <p><i>hub</i><span>Un nœud affiche son voisinage.</span></p>
+            <p><i>timeline</i><span>Un lien affiche sa chaîne principale.</span></p>
+            <p><i>share</i><span><strong>Voisinage</strong> règle la profondeur du contexte.</span></p>
+            <p><i>visibility</i><span>Un clic dans le vide sort du focus visuel.</span></p>
           </article>
           <article>
-            <h3>Outils</h3>
-            <p><i>tune</i> filtres, labels, liens, animations et focus.</p>
-            <p><i>fit_screen</i> recadre les éléments visibles.</p>
-            <p><i>restart_alt</i> remet vue, filtres et positions libres à zéro.</p>
+            <h3><i>construction</i>Outils</h3>
+            <p><i>tune</i><span>Affichage, labels, liens, animations et focus.</span></p>
+            <p><i>search</i><span>Recherche profonde dans les fiches.</span></p>
+            <p><i>fit_screen</i><span>Recadre les éléments visibles.</span></p>
+            <p><i>restart_alt</i><span>Remet vue, filtres et positions libres à zéro.</span></p>
           </article>
         </div>
       </section>
@@ -388,6 +391,6 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.min.js"></script>
     <script type="module" src="./assets/js/emoji-picker-setup.js?v=20260610-fr-picker-3"></script>
     <script src="./app.config.js"></script>
-  <script src="./assets/js/main.js?v=20260619-ui-polish-3" type="module"></script>
+  <script src="./assets/js/main.js?v=20260619-graph-help-2" type="module"></script>
   </body>
 </html>

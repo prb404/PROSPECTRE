@@ -331,9 +331,9 @@ label::after {
   top: calc(var(--topbar-height) + 90px);
   left: 82px;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(250px, 0.85fr);
+  grid-template-columns: minmax(270px, 1fr) minmax(270px, 0.9fr);
   gap: 12px;
-  width: min(720px, calc(100vw - 104px));
+  width: min(760px, calc(100vw - 104px));
   max-height: min(560px, calc(100vh - var(--topbar-height) - 24px));
   padding: 12px;
   overflow-x: hidden;
@@ -352,25 +352,43 @@ label::after {
 
 .graph-options-head {
   grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 
-.graph-options-head div {
+.graph-popover-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.graph-popover-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 44%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, var(--soft));
+  color: var(--text);
+}
+
+.graph-popover-icon i {
+  font-size: 18px;
+}
+
+.graph-popover-head div {
   display: grid;
   min-width: 0;
   gap: 2px;
 }
 
-.graph-options-head strong {
+.graph-popover-head strong {
   font-size: 14px;
 }
 
-.graph-options-head small,
+.graph-popover-head small,
 .graph-options-kicker,
 .graph-option-switch small {
   color: var(--muted);
@@ -378,6 +396,10 @@ label::after {
 }
 
 .graph-options-mini {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 6px;
   min-height: 32px;
   padding: 0 10px;
   border: 1px solid var(--line);
@@ -388,6 +410,10 @@ label::after {
   font-weight: 800;
 }
 
+.graph-options-mini i {
+  font-size: 16px;
+}
+
 .graph-options-section {
   display: grid;
   align-content: start;
@@ -396,9 +422,17 @@ label::after {
 }
 
 .graph-options-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.graph-options-kicker i {
+  color: color-mix(in srgb, var(--accent) 62%, var(--text));
+  font-size: 16px;
 }
 
 .graph-type-grid {
@@ -451,6 +485,11 @@ label::after {
 }
 
 .graph-label-mode button {
+  display: grid;
+  grid-template-columns: auto minmax(0, auto);
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   min-height: 34px;
   padding: 0 7px;
   border: 0;
@@ -459,6 +498,16 @@ label::after {
   color: var(--muted);
   font-size: 11px;
   font-weight: 850;
+}
+
+.graph-label-mode button i {
+  font-size: 15px;
+}
+
+.graph-label-mode button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .graph-label-mode button.active {
@@ -473,12 +522,25 @@ label::after {
 
 .graph-depth-control {
   display: grid;
-  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 10px;
   margin: 0;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--soft);
+}
+
+.graph-depth-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+  font-size: 17px;
 }
 
 .graph-depth-control > span {
@@ -496,6 +558,7 @@ label::after {
 }
 
 .graph-depth-control input[type="range"] {
+  grid-column: 1 / -1;
   width: 100%;
   accent-color: var(--accent);
 }
@@ -510,7 +573,7 @@ label::after {
 
 .graph-option-switch {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-height: 48px;
@@ -519,6 +582,18 @@ label::after {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--soft);
+}
+
+.graph-option-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text);
+  font-size: 17px;
 }
 
 .graph-option-switch > span {
@@ -547,6 +622,30 @@ label::after {
 .graph-option-switch .switch input {
   position: absolute;
   opacity: 0;
+}
+
+.graph-options-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.graph-options-foot > span {
+  display: grid;
+  gap: 2px;
+}
+
+.graph-options-foot strong {
+  font-size: 13px;
+}
+
+.graph-options-foot small {
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .project-menu.hidden {
@@ -1028,8 +1127,8 @@ label::after {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: min(430px, calc(100vw - 92px));
-  max-height: min(500px, calc(100vh - var(--topbar-height) - var(--graph-bottom) - 26px));
+  width: min(650px, calc(100vw - 92px));
+  max-height: min(510px, calc(100vh - var(--topbar-height) - var(--graph-bottom) - 26px));
   padding: 12px;
   overflow: auto;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
@@ -1045,41 +1144,14 @@ label::after {
   display: none;
 }
 
-.graph-help-popover header {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
+.graph-help-popover .graph-popover-head {
   order: -1;
   padding: 0 0 10px;
   border-bottom: 1px solid var(--line);
 }
 
-.graph-help-popover header > span {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 44%, var(--line));
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 14%, var(--soft));
-  color: var(--text);
-}
-
-.graph-help-popover header div {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.graph-help-popover header strong {
+.graph-help-popover .graph-popover-head strong {
   font-size: 15px;
-}
-
-.graph-help-popover header small {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 750;
 }
 
 .graph-help-grid {
@@ -1092,21 +1164,28 @@ label::after {
 .graph-help-grid article {
   display: grid;
   align-content: start;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
-  padding: 9px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: color-mix(in srgb, var(--soft) 72%, transparent);
 }
 
 .graph-help-grid h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 2px;
   color: var(--text);
   font-size: 12px;
 }
 
 .graph-help-grid p {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
   margin: 0;
   color: var(--muted);
   font-size: 11px;
@@ -1128,9 +1207,18 @@ label::after {
 }
 
 .graph-help-grid i {
+  color: color-mix(in srgb, var(--accent) 62%, var(--text));
   font-size: 15px;
-  vertical-align: -3px;
+  line-height: 1.2;
+}
+
+.graph-help-grid h3 i {
   color: var(--text);
+  font-size: 16px;
+}
+
+.graph-help-grid p > span {
+  min-width: 0;
 }
 
 .graph-search-field {

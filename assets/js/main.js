@@ -612,13 +612,13 @@ async function commitHeartCycle() {
   };
   try {
     await state.provider?.commitHeartCycle?.(payload);
-    showToast(`Merci pour ces ${HEART_CYCLE_SECONDS}s d’attention · ❤️➕${payload.points}`);
+    showToast(`Merci pour ces ${HEART_CYCLE_SECONDS}s d’attention 🫶</br>❤️➕${payload.points}`);
     state.gamification.cycle = createEmptyHeartCycle();
   } catch (error) {
     if (error?.partial) {
       showToast("💓 partiellement synchronisés · correction au prochain cycle");
     } else {
-      showToast("💓 non synchronisés · vérifiez la synchronisation de la Coprésence");
+      showToast("💓 non synchronisés · vérifiez la synchronisation des cycles");
     }
     state.gamification.cycle = createEmptyHeartCycle();
   } finally {
@@ -1380,17 +1380,22 @@ function renderTypeFilters() {
   const enabledCount = entries.filter(([type]) => state.activeTypes.has(type)).length;
   const focusSummary = getFocusSummary();
   const focusDepthDisabled = !state.graphPrefs.focusMode || (!state.selectedId && !state.selectedLinkKey);
+  const labelModes = [
+    ["auto", "Labels utiles", "label_important"],
+    ["all", "Tous les labels", "subtitles"],
+    ["none", "Sans labels", "label_off"]
+  ];
   renderQuickTypeFilters(entries);
   els.typeFilters.innerHTML = `
-    <header class="graph-options-head">
+    <header class="graph-options-head graph-popover-head">
+      <span class="graph-popover-icon"><i>tune</i></span>
       <div>
         <strong>Affichage du graphe</strong>
-        <small>${enabledCount}/${entries.length} types visibles</small>
+        <small>Types, labels, relations et contexte</small>
       </div>
-      <button class="graph-options-mini" type="button" data-filter-action="all">Tout afficher</button>
     </header>
     <section class="graph-options-section">
-      <p class="graph-options-kicker">Types d’éléments</p>
+      <p class="graph-options-kicker"><i>category</i>Types d’éléments</p>
       <div class="graph-type-grid">
         ${entries.map(([type, config]) => `
           <button class="graph-type-toggle${state.activeTypes.has(type) ? " active" : ""}" type="button" data-type-filter="${escapeHtml(type)}" aria-pressed="${state.activeTypes.has(type)}">
@@ -1401,24 +1406,22 @@ function renderTypeFilters() {
       </div>
     </section>
     <section class="graph-options-section">
-      <p class="graph-options-kicker">Lecture</p>
+      <p class="graph-options-kicker"><i>visibility</i>Lecture</p>
       <div class="graph-label-mode" role="group" aria-label="Mode d’affichage des labels">
-        ${[
-          ["auto", "Labels utiles"],
-          ["all", "Tous les labels"],
-          ["none", "Sans labels"]
-        ].map(([value, label]) => `
+        ${labelModes.map(([value, label, icon]) => `
           <button class="${state.graphPrefs.labelMode === value ? "active" : ""}" type="button" data-label-mode="${value}" aria-pressed="${state.graphPrefs.labelMode === value}">
-            ${label}
+            <i>${icon}</i>
+            <span>${label}</span>
           </button>
         `).join("")}
       </div>
       <div class="graph-option-switches">
-        ${renderGraphOptionSwitch("showLinks", "Liens visibles", "Affiche ou masque les relations")}
-        ${renderGraphOptionSwitch("showMotion", "Animations", "Active les particules de direction")}
-        ${renderGraphOptionSwitch("focusMode", "Mode focus", "Atténue les éléments hors contexte")}
+        ${renderGraphOptionSwitch("showLinks", "Liens visibles", "Affiche ou masque les relations", "polyline")}
+        ${renderGraphOptionSwitch("showMotion", "Animations", "Active les particules de direction", "auto_awesome_motion")}
+        ${renderGraphOptionSwitch("focusMode", "Mode focus", "Atténue les éléments hors contexte", "center_focus_strong")}
       </div>
       <label class="graph-depth-control">
+        <i class="graph-depth-icon">share</i>
         <span>
           <strong>Voisinage</strong>
           <small data-focus-depth-label>${focusDepthDisabled ? "Sélectionnez un nœud ou un lien pour l’appliquer" : `${getFocusDepth()} niveau${getFocusDepth() > 1 ? "x" : ""} · ${focusSummary}`}</small>
@@ -1426,6 +1429,16 @@ function renderTypeFilters() {
         <input type="range" min="1" max="5" step="1" value="${getFocusDepth()}" data-focus-depth ${focusDepthDisabled ? "disabled" : ""}>
       </label>
     </section>
+    <footer class="graph-options-foot">
+      <span>
+        <strong>Affichage du graphe</strong>
+        <small>${enabledCount}/${entries.length} types visibles</small>
+      </span>
+      <button class="graph-options-mini" type="button" data-filter-action="all">
+        <i>visibility</i>
+        <span>Tout afficher</span>
+      </button>
+    </footer>
   `;
   els.typeFilters.querySelector("[data-filter-action='all']")?.addEventListener("click", () => {
     state.activeTypes = new Set(entries.map(([type]) => type));
@@ -1517,9 +1530,10 @@ function renderQuickTypeFilters(entries) {
   });
 }
 
-function renderGraphOptionSwitch(key, label, hint) {
+function renderGraphOptionSwitch(key, label, hint, icon = "toggle_on") {
   return `
     <div class="graph-option-switch">
+      <i class="graph-option-icon">${escapeHtml(icon)}</i>
       <span>
         <strong>${escapeHtml(label)}</strong>
         <small>${escapeHtml(hint)}</small>
@@ -3799,7 +3813,7 @@ function renderGamificationCard() {
         <div class="heart-copy">
           <p class="kicker">Coprésence</p>
           <h3><span data-heart-counter="cycle">${cycle.points}</span> ❤️</h3>
-          <span>${active ? "🟢 Attention active" : "⏸️ En pause douce"} </br>⏲️ prochain cycle dans ${formatHeartTime(remaining)}</span>
+          <span>${active ? "✨ Attention active" : "⏸️ En pause douce"} </br>⏲️ prochain cycle : ${formatHeartTime(remaining)}</span>
         </div>
       </div>
       <div class="heart-score-grid">
