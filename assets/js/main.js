@@ -2473,7 +2473,8 @@ function renderOverviewEditForm() {
 
 function renderOverview(entity) {
   destroyContentEditor();
-  if (isMoodleHtmlEntity(entity)) ensureMoodleHtmlSupport();
+  const renderFormat = getEntityRenderFormat(entity);
+  if (renderFormat === "html" && isMoodleHtmlEntity(entity)) ensureMoodleHtmlSupport();
   if (state.editMode) {
     renderEditForm(entity);
     return;
@@ -2483,7 +2484,7 @@ function renderOverview(entity) {
   els.panelContent.innerHTML = `
     <article class="readable-card">
       ${summary ? renderSummaryCallout(entity, summary) : ""}
-      <div class="rendered-content">${renderContentWithEntityLinks(entity.body, entity.path, entity.content_format)}</div>
+      <div class="rendered-content">${renderContentWithEntityLinks(entity.body, entity.path, renderFormat)}</div>
     </article>
     ${related ? `<section class="meta-section relation-section"><h3>Éléments liés</h3>${related}</section>` : ""}
     <footer class="reading-actions reading-footer">
@@ -2511,7 +2512,12 @@ function renderOverview(entity) {
   els.panelContent.querySelector("[data-copy-entity-link]")?.addEventListener("click", () => copyDeepLink({ entityId: entity.id }));
   highlightRenderedSearchMatches();
   decorateSmartLinks(els.panelContent);
+  applySyntaxHighlighting(els.panelContent);
   bindInlineEntityClicks();
+}
+
+function getEntityRenderFormat(entity) {
+  return entity?.content_format === "html" && looksLikeHtml(entity?.body) ? "html" : "markdown";
 }
 
 function getVisibleEntitySummary(entity) {
@@ -2561,6 +2567,19 @@ function renderSummaryStyleChoice(style, activeStyle) {
         <span class="entity-summary-card__head"><i>${icon}</i><span>Résumé</span></span>
         <span class="summary-style-preview__line">Idée clé de la fiche, prête à être parcourue.</span>
       </span>
+    </button>
+  `;
+}
+
+function getInitialEditorMode(entity) {
+  return entity?.content_format === "html" || looksLikeHtml(entity?.body) ? "html" : "visual";
+}
+
+function renderEditorModeButton(mode, activeMode, icon, label) {
+  const active = mode === activeMode;
+  return `
+    <button type="button" class="${active ? "active" : ""}" data-editor-mode="${mode}" aria-pressed="${active}" aria-label="${escapeHtml(label)}">
+      <i>${icon}</i><span>${escapeHtml(label)}</span>
     </button>
   `;
 }
@@ -2692,16 +2711,16 @@ function renderDiscussion(entity = state.entities.get(state.selectedId)) {
 
 function renderEditForm(entity) {
   destroyContentEditor();
-  const contentFormat = entity.content_format === "html" ? "html" : "markdown";
+  const contentFormat = entity.content_format === "html" || looksLikeHtml(entity.body) ? "html" : "markdown";
+  const editorMode = getInitialEditorMode(entity);
   const summaryEnabled = isSummaryOptionEnabled(entity);
   const summaryStyle = normalizeSummaryStyle(entity.summary_style);
   const graphImageEnabled = Boolean(entity.graph_image_enabled && entity.graph_image);
   const graphImageValue = entity.graph_image || "";
   els.panelContent.innerHTML = `
-    <section class="edit-surface">
+    <section class="edit-surface" data-edit-dirty="false" data-body-dirty="false">
       <header class="edit-surface-head">
         <div>
-          <p class="kicker">Édition locale</p>
           <h2>${escapeHtml(entity.label || "Fiche")}</h2>
         </div>
         <label class="edit-toggle">
@@ -2722,7 +2741,6 @@ function renderEditForm(entity) {
       <section class="edit-card edit-option-card ${summaryEnabled ? "is-enabled" : ""}" data-edit-option="summary">
         <div class="edit-card-head">
           <div>
-            <p class="kicker">Option</p>
             <h3>Résumé</h3>
             <p>Afficher un résumé distinct du contenu principal.</p>
           </div>
@@ -2741,32 +2759,28 @@ function renderEditForm(entity) {
           </div>
         </details>
       </section>
-      <section class="edit-card edit-format-card">
-        <div class="edit-card-head">
+      <section class="edit-card edit-editor-card is-${editorMode}-mode" data-editor-format="${contentFormat}">
+        <header class="edit-editor-head">
           <div>
-            <p class="kicker">Corps</p>
-            <h3>Mode de contenu</h3>
+            <h3>Contenu</h3>
           </div>
+          <span class="editor-format-badge">${contentFormat === "html" ? "HTML" : "Markdown"}</span>
+        </header>
+        <input id="content-format" type="hidden" value="${contentFormat}">
+        <input id="editor-format" type="hidden" value="${contentFormat}">
+        <input id="editor-mode" type="hidden" value="${editorMode}">
+        <div class="editor-mode-bar" role="toolbar" aria-label="Vues d’édition du contenu">
+          ${renderEditorModeButton("visual", editorMode, "stylus_note", "Visuel")}
+          ${renderEditorModeButton("markdown", editorMode, "notes", "Markdown")}
+          ${renderEditorModeButton("html", editorMode, "code_blocks", "HTML")}
+          ${renderEditorModeButton("preview", editorMode, "visibility", "Aperçu")}
         </div>
-        <label class="field-label compact-select-label">Type de contenu
-          <select id="content-format" class="text-field">
-            <option value="markdown"${contentFormat === "markdown" ? " selected" : ""}>Texte enrichi</option>
-            <option value="html"${contentFormat === "html" ? " selected" : ""}>HTML importé</option>
-          </select>
-        </label>
-      </section>
-      <section class="edit-card edit-content-card ${contentFormat === "html" ? "is-html-format" : "is-markdown-format"}">
-        <div class="edit-content-head">
-          <div>
-            <p class="kicker">Corps</p>
-            <h3>${contentFormat === "html" ? "HTML importé" : "Éditeur de texte"}</h3>
+        <div class="editor-workbench">
+          <div id="content-editor" class="content-editor"></div>
+          <textarea id="adjust-body" class="content-editor-fallback" rows="18" spellcheck="false">${escapeHtml(entity.body || "")}</textarea>
+          <div class="html-preview-shell hidden">
+            <div id="html-preview" class="html-editor-preview" aria-live="polite"></div>
           </div>
-        </div>
-        <div id="content-editor" class="content-editor"></div>
-        <textarea id="adjust-body" class="content-editor-fallback" rows="18" spellcheck="false">${escapeHtml(entity.body || "")}</textarea>
-        <div class="html-preview-shell hidden">
-          <p class="kicker">Aperçu</p>
-          <div id="html-preview" class="html-editor-preview" aria-live="polite"></div>
         </div>
       </section>
       <section class="edit-card edit-option-card ${graphImageEnabled ? "is-enabled" : ""}" data-edit-option="graph-image">
@@ -2816,6 +2830,7 @@ function renderEditForm(entity) {
       summary.disabled = !enabled;
       if (enabled) summary.focus();
     }
+    markEditDirty();
     scheduleEditAutosave(entity);
   });
   els.panelContent.querySelectorAll("[data-summary-style]").forEach((button) => {
@@ -2827,6 +2842,7 @@ function renderEditForm(entity) {
       });
       const label = els.panelContent.querySelector(".summary-appearance summary strong");
       if (label) label.textContent = summaryStyleLabel(button.dataset.summaryStyle);
+      markEditDirty();
       scheduleEditAutosave(entity);
     });
   });
@@ -2837,6 +2853,7 @@ function renderEditForm(entity) {
     card?.classList.toggle("is-enabled", enabled);
     editor?.classList.toggle("hidden", !enabled);
     if (enabled) els.panelContent.querySelector("#graph-image-source")?.focus();
+    markEditDirty();
     scheduleEditAutosave(entity);
   });
   els.panelContent.querySelector("#graph-image-file")?.addEventListener("change", async (event) => {
@@ -2850,6 +2867,7 @@ function renderEditForm(entity) {
     els.panelContent.querySelector("#graph-image-toggle").checked = true;
     els.panelContent.querySelector("[data-edit-option='graph-image']")?.classList.add("is-enabled");
     els.panelContent.querySelector(".graph-image-editor")?.classList.remove("hidden");
+    markEditDirty();
     scheduleEditAutosave(entity);
   });
   els.panelContent.querySelector("#clear-graph-image")?.addEventListener("click", () => {
@@ -2857,19 +2875,35 @@ function renderEditForm(entity) {
     els.panelContent.querySelector("#graph-image-toggle").checked = false;
     els.panelContent.querySelector("[data-edit-option='graph-image']")?.classList.remove("is-enabled");
     els.panelContent.querySelector(".graph-image-editor")?.classList.add("hidden");
+    markEditDirty();
     scheduleEditAutosave(entity);
   });
-  els.panelContent.querySelector("#content-format")?.addEventListener("change", (event) => {
-    handleContentFormatChange(entity, event.target.value);
+  els.panelContent.querySelectorAll("[data-editor-mode]").forEach((button) => {
+    button.addEventListener("click", () => switchEditorMode(entity, button.dataset.editorMode));
   });
   setupContentEditor(entity);
   const surface = els.panelContent.querySelector(".edit-surface");
   surface?.addEventListener("input", (event) => {
-    if (event.target?.id === "adjust-body" && entity.content_format === "html") updateHtmlPreview(entity);
+    markEditDirty({ body: event.target?.id === "adjust-body" });
+    if (getEditorMode() === "preview" || getEditorFormat() === "html") updateEditorPreview(entity);
     scheduleEditAutosave(entity);
   });
-  surface?.addEventListener("change", () => scheduleEditAutosave(entity));
+  surface?.addEventListener("change", (event) => {
+    if (!event.target?.closest("[data-editor-mode]")) markEditDirty();
+    scheduleEditAutosave(entity);
+  });
   els.panelContent.querySelector("#download-current").addEventListener("click", exportSelected);
+}
+
+function markEditDirty(options = {}) {
+  const surface = els.panelContent.querySelector(".edit-surface");
+  if (!surface) return;
+  surface.dataset.editDirty = "true";
+  if (options.body) surface.dataset.bodyDirty = "true";
+}
+
+function isBodyEditDirty() {
+  return els.panelContent.querySelector(".edit-surface")?.dataset.bodyDirty === "true";
 }
 
 function scheduleEditAutosave(entity) {
@@ -2881,6 +2915,12 @@ function readEditFormValues(entity) {
   const summaryEnabledNow = Boolean(els.panelContent.querySelector("#summary-toggle")?.checked);
   const graphImageEnabledNow = Boolean(els.panelContent.querySelector("#graph-image-toggle")?.checked);
   const graphImage = graphImageEnabledNow ? els.panelContent.querySelector("#graph-image-source")?.value.trim() || "" : "";
+  const edited = isBodyEditDirty()
+    ? getEditedBodyAndFormat()
+    : {
+      body: entity.body || "",
+      format: entity.content_format === "html" ? "html" : "markdown"
+    };
   return {
     label: els.panelContent.querySelector("#adjust-label")?.value.trim() || entity.label,
     summary: summaryEnabledNow ? els.panelContent.querySelector("#adjust-summary")?.value.trim() || "" : "",
@@ -2888,10 +2928,10 @@ function readEditFormValues(entity) {
     summary_style: summaryEnabledNow
       ? normalizeSummaryStyle(els.panelContent.querySelector("[data-summary-style].active")?.dataset.summaryStyle)
       : "",
-    content_format: els.panelContent.querySelector("#content-format")?.value === "html" ? "html" : "markdown",
+    content_format: edited.format,
     graph_image: graphImage,
     graph_image_enabled: Boolean(graphImageEnabledNow && graphImage),
-    body: getEditedMarkdown()
+    body: edited.body
   };
 }
 
@@ -2933,33 +2973,59 @@ function persistEditForm(entity, options = {}) {
   return previousSignature !== nextSignature;
 }
 
-function handleContentFormatChange(entity, value) {
-  const currentBody = getEditedMarkdown();
+function switchEditorMode(entity, mode) {
+  const targetMode = normalizeEditorMode(mode);
+  const current = isBodyEditDirty()
+    ? getEditedBodyAndFormat()
+    : {
+      body: entity.body || "",
+      format: entity.content_format === "html" && looksLikeHtml(entity.body) ? "html" : "markdown"
+    };
   destroyContentEditor();
-  entity.content_format = value === "html" ? "html" : "markdown";
-  entity.body = currentBody;
-  els.panelContent.querySelector("#adjust-body").value = currentBody;
-  const contentCard = els.panelContent.querySelector(".edit-content-card");
-  const contentTitle = contentCard?.querySelector(".edit-content-head h3");
-  contentCard?.classList.toggle("is-html-format", entity.content_format === "html");
-  contentCard?.classList.toggle("is-markdown-format", entity.content_format !== "html");
-  if (contentTitle) contentTitle.textContent = entity.content_format === "html" ? "HTML importé" : "Éditeur de texte";
+  const nextFormat = targetMode === "html"
+    ? "html"
+    : targetMode === "preview"
+      ? current.format
+      : "markdown";
+  const nextBody = nextFormat === current.format
+    ? current.body
+    : nextFormat === "html"
+      ? markdownToEditableHtml(current.body)
+      : htmlToMarkdown(current.body);
+  setEditorMode(targetMode, nextFormat);
+  const fallback = els.panelContent.querySelector("#adjust-body");
+  if (fallback) {
+    fallback.value = nextBody;
+    fallback.scrollTop = 0;
+    fallback.scrollLeft = 0;
+  }
   setupContentEditor(entity);
-  scheduleEditAutosave(entity);
+  resetEditorScroll();
 }
 
 function setupContentEditor(entity) {
+  const mode = getEditorMode();
+  const format = getEditorFormat();
   const mount = els.panelContent.querySelector("#content-editor");
   const fallback = els.panelContent.querySelector("#adjust-body");
+  const initialBody = fallback?.value ?? entity.body ?? "";
   const previewShell = els.panelContent.querySelector(".html-preview-shell");
+  mount?.classList.add("hidden");
+  fallback?.classList.add("content-editor-fallback");
+  fallback.hidden = true;
   previewShell?.classList.add("hidden");
-  if (entity.content_format === "html") {
-    mount?.classList.add("hidden");
+  if (mode === "preview") {
+    state.contentEditorAssetMap = new Map();
+    previewShell?.classList.remove("hidden");
+    updateEditorPreview(entity);
+    resetEditorScroll();
+    return;
+  }
+  if (mode === "html" || mode === "markdown") {
     fallback?.classList.remove("content-editor-fallback");
     fallback.hidden = false;
     state.contentEditorAssetMap = new Map();
-    previewShell?.classList.remove("hidden");
-    updateHtmlPreview(entity);
+    resetEditorScroll();
     return;
   }
   if (!mount || !window.toastui?.Editor) {
@@ -2974,7 +3040,7 @@ function setupContentEditor(entity) {
   fallback.classList.add("content-editor-fallback");
   fallback.hidden = true;
   state.contentEditorAssetMap = new Map();
-  const editorMarkdown = resolveEditorMarkdownAssets(entity.body || "", entity.path);
+  const editorMarkdown = resolveEditorMarkdownAssets(format === "html" ? htmlToMarkdown(initialBody) : initialBody, entity.path);
   state.contentEditor = new window.toastui.Editor({
     el: mount,
     height: "520px",
@@ -3004,26 +3070,158 @@ function setupContentEditor(entity) {
       }
     }
   });
-  state.contentEditor.on?.("change", () => scheduleEditAutosave(entity));
+  state.contentEditor.on?.("change", () => {
+    markEditDirty({ body: true });
+    scheduleEditAutosave(entity);
+  });
+  resetEditorScroll();
 }
 
-function updateHtmlPreview(entity) {
+function updateEditorPreview(entity) {
   const preview = els.panelContent.querySelector("#html-preview");
   if (!preview) return;
-  if (isMoodleHtmlEntity(entity) || entity.content_format === "html") ensureMoodleHtmlSupport();
-  preview.innerHTML = renderContentWithEntityLinks(getEditedMarkdown(), entity.path, "html");
+  const edited = getEditedBodyAndFormat();
+  if (isMoodleHtmlEntity(entity) || edited.format === "html") ensureMoodleHtmlSupport();
+  preview.innerHTML = renderContentWithEntityLinks(edited.body, entity.path, edited.format);
   decorateSmartLinks(preview);
+  applySyntaxHighlighting(preview);
   bindInlineEntityClicks();
 }
 
+function applySyntaxHighlighting(root = els.panelContent) {
+  if (!root || !window.Prism?.highlightAllUnder) return;
+  root.querySelectorAll("pre").forEach((block) => {
+    block.classList.add("line-numbers");
+    const code = block.querySelector("code");
+    if (code && ![...code.classList].some((className) => className.startsWith("language-"))) {
+      code.classList.add("language-markdown");
+    }
+  });
+  window.Prism.highlightAllUnder(root);
+}
+
 function getEditedMarkdown() {
-  let markdown = state.contentEditor?.getMarkdown()
+  return getEditedBodyAndFormat().body;
+}
+
+function getEditedBodyAndFormat() {
+  const mode = getEditorMode();
+  const format = getEditorFormat();
+  let body = mode === "visual"
+    ? state.contentEditor?.getMarkdown()
     ?? els.panelContent.querySelector("#adjust-body")?.value
-    ?? "";
+    ?? ""
+    : els.panelContent.querySelector("#adjust-body")?.value ?? "";
   for (const [resolved, original] of state.contentEditorAssetMap) {
-    markdown = markdown.split(resolved).join(original);
+    body = body.split(resolved).join(original);
   }
-  return markdown;
+  return { body, format };
+}
+
+function normalizeEditorMode(mode) {
+  return ["visual", "markdown", "html", "preview"].includes(mode) ? mode : "visual";
+}
+
+function getEditorMode() {
+  return normalizeEditorMode(els.panelContent.querySelector("#editor-mode")?.value);
+}
+
+function getEditorFormat() {
+  return els.panelContent.querySelector("#editor-format")?.value === "html" ? "html" : "markdown";
+}
+
+function setEditorMode(mode, format) {
+  const normalizedMode = normalizeEditorMode(mode);
+  const normalizedFormat = format === "html" ? "html" : "markdown";
+  const modeInput = els.panelContent.querySelector("#editor-mode");
+  const formatInput = els.panelContent.querySelector("#editor-format");
+  const card = els.panelContent.querySelector(".edit-editor-card");
+  const badge = els.panelContent.querySelector(".editor-format-badge");
+  if (modeInput) modeInput.value = normalizedMode;
+  if (formatInput) formatInput.value = normalizedFormat;
+  card?.classList.remove("is-visual-mode", "is-markdown-mode", "is-html-mode", "is-preview-mode");
+  card?.classList.add(`is-${normalizedMode}-mode`);
+  card?.setAttribute("data-editor-format", normalizedFormat);
+  if (badge) badge.textContent = normalizedFormat === "html" ? "HTML" : "Markdown";
+  els.panelContent.querySelectorAll("[data-editor-mode]").forEach((button) => {
+    const active = button.dataset.editorMode === normalizedMode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function resetEditorScroll() {
+  const reset = () => {
+    [
+      "#adjust-body",
+      "#html-preview",
+      ".toastui-editor-contents",
+      ".toastui-editor-md-container",
+      ".toastui-editor-ww-container",
+      ".toastui-editor-main",
+      ".editor-workbench"
+    ].forEach((selector) => {
+      const node = els.panelContent.querySelector(selector);
+      if (!node) return;
+      node.scrollTop = 0;
+      node.scrollLeft = 0;
+    });
+  };
+  reset();
+  requestAnimationFrame(() => {
+    reset();
+    setTimeout(reset, 60);
+  });
+}
+
+function looksLikeHtml(value = "") {
+  return /<\/?[a-z][\s\S]*>/i.test(String(value || ""));
+}
+
+function markdownToEditableHtml(markdown = "") {
+  const html = window.marked?.parse ? window.marked.parse(String(markdown || "")) : String(markdown || "");
+  return window.DOMPurify?.sanitize ? window.DOMPurify.sanitize(html) : html;
+}
+
+function htmlToMarkdown(html = "") {
+  const template = document.createElement("template");
+  template.innerHTML = window.DOMPurify?.sanitize ? window.DOMPurify.sanitize(String(html || "")) : String(html || "");
+  return domNodesToMarkdown(template.content.childNodes).replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function domNodesToMarkdown(nodes) {
+  return [...nodes].map((node) => domNodeToMarkdown(node)).join("").replace(/[ \t]+\n/g, "\n");
+}
+
+function domNodeToMarkdown(node) {
+  if (node.nodeType === Node.TEXT_NODE) return node.nodeValue.replace(/\s+/g, " ");
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const tag = node.tagName.toLowerCase();
+  const text = () => domNodesToMarkdown(node.childNodes).trim();
+  if (/h[1-6]/.test(tag)) return `${"#".repeat(Number(tag[1]))} ${text()}\n\n`;
+  if (tag === "p") return `${text()}\n\n`;
+  if (tag === "br") return "\n";
+  if (tag === "strong" || tag === "b") return `**${text()}**`;
+  if (tag === "em" || tag === "i") return `*${text()}*`;
+  if (tag === "code") return node.closest("pre") ? node.textContent : `\`${node.textContent}\``;
+  if (tag === "pre") return `\n\`\`\`\n${node.textContent.trim()}\n\`\`\`\n\n`;
+  if (tag === "blockquote") return `${text().split("\n").map((line) => `> ${line}`).join("\n")}\n\n`;
+  if (tag === "a") return `[${text() || node.href}](${node.getAttribute("href") || ""})`;
+  if (tag === "img") return `![${node.getAttribute("alt") || "Image"}](${node.getAttribute("src") || ""})`;
+  if (tag === "ul" || tag === "ol") return `${[...node.children].map((item, index) => `${tag === "ol" ? `${index + 1}.` : "-"} ${domNodesToMarkdown(item.childNodes).trim()}`).join("\n")}\n\n`;
+  if (tag === "table") return tableToMarkdown(node);
+  if (["div", "section", "article", "main", "tbody", "thead"].includes(tag)) return `${domNodesToMarkdown(node.childNodes)}\n`;
+  return domNodesToMarkdown(node.childNodes);
+}
+
+function tableToMarkdown(table) {
+  const rows = [...table.querySelectorAll("tr")].map((row) => [...row.children].map((cell) => domNodesToMarkdown(cell.childNodes).trim().replace(/\|/g, "\\|")));
+  if (!rows.length) return "";
+  const width = Math.max(...rows.map((row) => row.length));
+  const normalized = rows.map((row) => Array.from({ length: width }, (_, index) => row[index] || ""));
+  const head = normalized[0];
+  const body = normalized.slice(1);
+  return `\n| ${head.join(" | ")} |\n| ${head.map(() => "---").join(" | ")} |\n${body.map((row) => `| ${row.join(" | ")} |`).join("\n")}\n\n`;
 }
 
 function destroyContentEditor() {

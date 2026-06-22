@@ -12,9 +12,6 @@
 !assets/
 !assets/**
 
-!scripts/
-!scripts/build-prospectre-docs-v2-pack.mjs
-
 !data/
 !data/prospectre-documentation/
 !data/prospectre-documentation/**
