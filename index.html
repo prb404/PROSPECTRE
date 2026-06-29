@@ -3,8 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071015">
+    <meta name="application-name" content="PROSPECTRE">
+    <meta name="apple-mobile-web-app-title" content="PROSPECTRE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PROSPECTRE</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23071015' stroke='%237dd3fc' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%23a7f3d0'/%3E%3C/svg%3E">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./assets/icons/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="./assets/icons/icon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
@@ -12,7 +20,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
   <link rel="stylesheet" href="./assets/css/system/index.css?v=20260626-v315-granular-skeletons-1">
-  <link rel="stylesheet" href="./assets/css/features/chrome-shell.css?v=20260626-v328-library-masonry-tabs-1">
+  <link rel="stylesheet" href="./assets/css/features/chrome-shell.css?v=20260629-v329-header-library-orb-1">
   <link rel="stylesheet" href="./assets/css/features/insights-dashboard.css?v=20260623-insights-dashboard-feature-1">
   <link rel="stylesheet" href="./assets/css/features/overlays.css?v=20260626-liquid-consolidation-1">
   <link rel="stylesheet" href="./assets/css/features/identity-presence.css?v=20260623-identity-presence-feature-1">
@@ -26,7 +34,7 @@
   <link rel="stylesheet" href="./assets/css/features/entity-reading.css?v=20260626-v325-reperes-manifest-polish-1">
   <link rel="stylesheet" href="./assets/css/features/content-rendering.css?v=20260625-panel-rails-3">
   <link rel="stylesheet" href="./assets/css/features/entity-editor.css?v=20260626-v327-library-footer-fix-1">
-  <link rel="stylesheet" href="./assets/css/features/responsive.css?v=20260626-v327-library-footer-fix-1">
+  <link rel="stylesheet" href="./assets/css/features/responsive.css?v=20260629-v329-header-library-orb-1">
   <link rel="stylesheet" href="./assets/css/system/adapters.css?v=20260626-v313-motion-shell-1">
   </head>
   <body>
@@ -38,8 +46,9 @@
       <header class="topbar">
         <div class="topbar-left">
           <div class="project-switcher-wrap">
-            <button id="project-switcher-toggle" class="project-switcher" type="button" aria-controls="project-switcher-menu" aria-expanded="false">
-              <span>
+            <button id="project-switcher-toggle" class="project-switcher" type="button" aria-controls="project-switcher-menu" aria-expanded="false" aria-label="Changer de projet">
+              <span class="project-switcher__orb" aria-hidden="true"></span>
+              <span class="project-switcher__meta">
                 <small>Projet actif</small>
                 <strong id="active-project-name">Chargement…</strong>
               </span>
@@ -87,6 +96,10 @@
         <button id="filter-menu-toggle" class="tool-button" type="button" aria-controls="type-filters" aria-expanded="false" aria-label="Options d’affichage du graphe">
           <i>tune</i>
           <span class="tooltip right">Affichage du graphe</span>
+        </button>
+        <button id="project-library-toolbar" class="tool-button" type="button" aria-label="Ouvrir la bibliothèque">
+          <i>inventory_2</i>
+          <span class="tooltip right">Bibliothèque</span>
         </button>
         <button id="graph-search-toggle" class="tool-button" type="button" aria-label="Rechercher dans le graphe" aria-controls="graph-search-popover" aria-expanded="false">
           <i>search</i>
@@ -471,6 +484,7 @@
       }
     </script>
     <script src="./app.config.js"></script>
-  <script src="./assets/js/main.js?v=20260626-v328-library-masonry-tabs-1" type="module"></script>
+  <script src="./assets/js/app/pwa.js?v=20260629-v330-pwa-installable-1" type="module"></script>
+  <script src="./assets/js/main.js?v=20260629-v329-header-library-orb-1" type="module"></script>
   </body>
 </html>

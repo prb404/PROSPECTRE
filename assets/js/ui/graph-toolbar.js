@@ -6,8 +6,8 @@ const TOOLBAR_GAP = 8;
 const TOOLBAR_PADDING = 8;
 const MIN_TOOLBAR_SIZE = 48;
 const TOOLBAR_CELL = 40;
-const DEFAULT_TOOLBAR_SIZE = toolbarSizeForGrid(1, 11);
-const DEFAULT_HORIZONTAL_TOOLBAR_SIZE = toolbarSizeForGrid(11, 1);
+const DEFAULT_TOOLBAR_SIZE = toolbarSizeForGrid(1, 12);
+const DEFAULT_HORIZONTAL_TOOLBAR_SIZE = toolbarSizeForGrid(12, 1);
 
 export function createGraphToolbarController({
   toolbar,

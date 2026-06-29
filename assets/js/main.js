@@ -87,7 +87,7 @@ import {
   createGraphToolbarController,
   GRAPH_TOOLBAR_PREFS_KEY,
   normalizeGraphToolbarPrefs
-} from "./ui/graph-toolbar.js?v=20260625-toolbar-liquid-4";
+} from "./ui/graph-toolbar.js?v=20260629-v329-header-library-orb-1";
 import {
   createDiscussionRenderer,
   QUICK_REACTIONS
@@ -106,7 +106,7 @@ import {
 import { createPresenceController } from "./controllers/presence-controller.js?v=20260626-liquid-consolidation-1";
 import { createProfileController } from "./controllers/profile-controller.js?v=20260626-v315-granular-skeletons-1";
 import { createProjectController } from "./controllers/project-controller.js?v=20260626-v324-library-reperes-1";
-import { createProjectSwitcherController } from "./controllers/project-switcher-controller.js?v=20260626-v328-library-masonry-tabs-1";
+import { createProjectSwitcherController } from "./controllers/project-switcher-controller.js?v=20260629-v329-header-library-orb-1";
 import { createRealtimeController } from "./controllers/realtime-controller.js";
 import { createSearchController } from "./controllers/search-controller.js";
 import { createSelectionController } from "./controllers/selection-controller.js?v=20260626-v324-library-reperes-1";
@@ -199,6 +199,7 @@ const els = {
   graphHelpToggle: document.querySelector("#graph-help-toggle"),
   graphHelpPopover: document.querySelector("#graph-help-popover"),
   graphToolbar: document.querySelector(".graph-toolbar"),
+  projectLibraryToolbar: document.querySelector("#project-library-toolbar"),
   openGraphWindow: document.querySelector("#open-graph-window"),
   fullscreenGraph: document.querySelector("#fullscreen-graph"),
   insightsToggle: document.querySelector("#insights-toggle"),
@@ -751,6 +752,9 @@ state.graphOptionsController = createGraphOptionsController({
   setLoadingPhase: (phase, options) => state.uiRuntimeController.setLoadingPhase(phase, options),
   showToast,
   windowRef: window
+});
+els.projectLibraryToolbar?.addEventListener("click", () => {
+  state.projectSwitcherController?.openLibrary?.("library");
 });
 
 window.__prospectreState = state;
